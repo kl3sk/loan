@@ -4,6 +4,9 @@
 # Docker
 docker/database/data
 
+# Uploads
+src/public/uploads
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
