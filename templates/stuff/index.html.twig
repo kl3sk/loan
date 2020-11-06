@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stuff index{% endblock %}
+
+{% block caption %}
+    {{ ('###' ~ image.name)|markdown_to_html }}
+    {% if image.description %}
+        {% apply markdown_to_html %}
+            ```
+            {{ image.description }}
+            ```
+        {% endapply %}
+    {% endif %}
+
+    {{ "*#{image.image.originalName}*"|markdown_to_html }}
+    {% if image.image.dimensions %}
+        {#        {% set dimentions|split(,) %}#}
+        {{ image.image.dimensions[0] }}px x {{ image.image.dimensions[1] }}px
+        |
+        {{ image.image.size|byte_convert }}
+    {% endif %}
+{% endblock caption %}
+
+{% block body %}
+    <h1>Stuff index</h1>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+            <th scope="col">LendAt</th>
+            <th scope="col">ReturnedAt</th>
+            <td>Images</td>
+            <th scope="col">actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for stuff in stuffs %}
+            <tr>
+                <td>{{ stuff.id }}</td>
+                <td>{{ stuff.name }}</td>
+                <td>{{ stuff.lendAt ? stuff.lendAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ stuff.returnedAt ? stuff.returnedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <div class="lbox">
+                        {% set images = [] %}
+                        {% for image in stuff.stuffImages %}
+                            {% set images = images|merge([{
+                                src: vich_uploader_asset(image),
+                                subHtml: block('caption'),
+                                thumb: vich_uploader_asset(image),
+                                downloadUrl: path('stuff_download', {'id': image})
+                            }]) %}
+                        {% endfor %}
+                        {% if images|length %}
+                            <span class="fa-layers fa-fw fa-2x images cursor-pointer"
+                                  data-images="{{ images|json_encode }}">
+                                <i class="fas fa-images"></i>
+                                <span class="fa-layers-counter bg-primary">{{ stuff.stuffImages|length }}</span>
+                             </span>
+                        {% else %}
+                            No image found
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <a href="{{ path('stuff_show', {'id': stuff.id}) }}">show</a>
+                    <a href="{{ path('stuff_edit', {'id': stuff.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('stuff_new') }}">Create new</a>
+{% endblock %}
